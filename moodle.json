@@ -3,18 +3,14 @@
     "home_dir": "{{env `HOME`}}",
     "origin_box_name": "centos-6.5-lamp",
     "moodel_path": "/var/www/moodle",
-    "moodel_user": "moodle",
+    "moodel_user": "root",
     "moodel_password": ""
   },
   "builders": [
     {
-      "type": "virtualbox-ovf",
-      "source_path": "{{user `home_dir`}}/.vagrant.d/boxes/{{user `origin_box_name`}}/virtualbox/box.ovf",
-      "ssh_username": "vagrant",
-      "ssh_password": "vagrant",
-      "headless": false,
-      "ssh_wait_timeout": "120s",
-      "shutdown_command": "echo 'Packing: Shutdown!' | sudo -S shutdown -P now"
+      "type": "docker",
+      "image": "dockerfiles/centos-lamp",
+      "export_path": "image.tar"
     }
   ],
   "provisioners": [
@@ -26,16 +22,10 @@
     {
       "type": "shell",
       "inline": [
-        "sudo su",
         "cd /root",
-        "cat setup.sql | mysql -u {{user `moodel_user`}} -p {{user `moodel_password`}}"
-      ]
-    },
-    {
-      "type": "shell",
-      "inline": [
-        "sudo su",
-        "yum groupinstall \"Development Tools\"",
+        "yum install mysql -y",
+        "cat setup.sql | mysql -u {{user `moodel_user`}}",
+        "yum groupinstall \"Development Tools\" -y ",
         "cd {{user `moodel_path`}}/..",
         "git clone --depth=1 -b MOODLE_29_STABLE git://git.moodle.org/moodle.git",
         "chown -R root {{user `moodel_path`}}",
